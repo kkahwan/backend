@@ -1,0 +1,47 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.kotlin
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+### 로그 ###
+logs/
+
+### 빌드 결과 ###
+target/
+
+### IDE 설정 (로컬 비밀번호 포함) ###
+.idea/
+*.iml
+
+### 예전 복사본 (비밀값 하드코딩, Maven 미사용) ###
+src/com/
+
+### 배치 실행 결과 파일 ###
+daily_final_settlement_*.csv
+hourly_sales_*.csv
+hourly_sales_*.txt

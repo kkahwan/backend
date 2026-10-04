@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  logs/app.log     : 앱 로그 (com.si.batch: 배치 진행, 적재/정산 결과, 오류) - SQL/프레임워크 로그 제외
+  logs/general.log : 일반 로그 (앱 로그 + 실행 SQL + Spring/Tomcat/DB 커넥션 등 전체)
+  SQL은 MySQL 드라이버 profileSQL(application.properties 접속 URL)로 기록, 콘솔에는 출력 안 함
+  하루 단위로 파일을 나눠 30일 보관 (예: app.2026-10-03.log), 콘솔 출력은 그대로 유지
+  폴더 위치는 LOG_DIR 환경변수로 변경 (기본: 실행 위치의 logs)
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <property name="LOG_DIR" value="${LOG_DIR:-logs}"/>
+    <property name="FILE_PATTERN" value="%d{yyyyMMdd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"/>
+
+    <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="GENERAL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/general.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/general.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="com.si.batch.common.SqlLogFilter"/>
+        <encoder>
+            <!-- 드라이버 SQL 로그의 긴 꼬리(생성시각, 호출위치)를 잘라 "SQL (2ms) SELECT ..." 형태로 -->
+            <pattern>%d{yyyyMMdd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %replace(%msg){'^\[QUERY\] (.*) \[Created on: .*?duration: (\d+),.*', 'SQL ($2ms) $1'}%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 앱 로그는 APP + (additivity로) root의 GENERAL, CONSOLE 에도 함께 기록 -->
+    <logger name="com.si.batch" level="INFO">
+        <appender-ref ref="APP"/>
+    </logger>
+
+    <!-- 실행 클래스의 Spring 기동 로그("Starting Main ...")는 앱 로그에서 제외 -->
+    <logger name="com.si.batch.Main" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="GENERAL"/>
+    </logger>
+    <logger name="com.si.batch.ShopApplication" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="GENERAL"/>
+    </logger>
+
+    <!-- 실행 SQL: 일반 로그에만 -->
+    <logger name="MySQL" level="INFO" additivity="false">
+        <appender-ref ref="GENERAL"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="GENERAL"/>
+    </root>
+</configuration>
