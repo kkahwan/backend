@@ -4,13 +4,10 @@ import com.si.batch.dao.ShopDao;
 import com.si.batch.model.Banner;
 import com.si.batch.model.Notice;
 import com.si.batch.model.Product;
-import com.si.batch.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.sql.DataSource;
@@ -21,12 +18,10 @@ import java.util.Map;
 @RestController
 public class ShopApiController {
 
-    private final OrderService orderService;
     private final DataSource dataSource;
     private final ShopDao shopDao = new ShopDao();
 
-    public ShopApiController(OrderService orderService, DataSource dataSource) {
-        this.orderService = orderService;
+    public ShopApiController(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -59,11 +54,7 @@ public class ShopApiController {
         }
     }
 
-    // 요청 본문: {"ITM_HS_01": 2, "ITM_HS_04": 1}
-    @PostMapping("/api/orders")
-    public Map<String, Object> order(@RequestBody Map<String, Integer> cart) throws Exception {
-        return orderService.placeOrder(cart);
-    }
+    // 주문은 결제 승인 후에만 저장 -> PaymentApiController
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> badRequest(IllegalArgumentException e) {
