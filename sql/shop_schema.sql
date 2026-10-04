@@ -54,3 +54,14 @@ SELECT * FROM (
 WHERE NOT EXISTS (SELECT 1 FROM BANNER);
 
 UPDATE NOTICE SET CONTENT = '홈 화면 ''최신 상품''에서 확인해 보세요.' WHERE CONTENT = '홈 화면 ''새로 들어온 상품''에서 확인해 보세요.';
+
+-- 회원: 이메일이 아이디. 구글로만 가입하면 PASSWORD_HASH가 NULL, 구글 연결 전이면 GOOGLE_ID가 NULL
+-- (테스트용 H2 정의: src/test/resources/schema.sql 도 같이 수정)
+CREATE TABLE IF NOT EXISTS MEMBER (
+    MEMBER_ID     BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    EMAIL         VARCHAR(100) NOT NULL UNIQUE,
+    PASSWORD_HASH VARCHAR(100) NULL,                  -- BCrypt
+    NAME          VARCHAR(50)  NOT NULL,
+    GOOGLE_ID     VARCHAR(50)  NULL UNIQUE,           -- 구글 계정 고유 ID (sub)
+    CREATED_AT    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
